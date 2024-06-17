@@ -3,8 +3,8 @@
 #include <string.h>
 
 typedef struct Pasien {
-    char id_pasien[20];
-    char nama_lengkap[100];
+    char id_pasien[50];
+    char nama_pasien[100];
     char alamat[200];
     char kota[50];
     char tempat_lahir[50];
