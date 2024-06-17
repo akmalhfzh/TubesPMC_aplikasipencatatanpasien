@@ -373,6 +373,37 @@ void jumlah_pasien_dan_penyakit_per_tahun(RiwayatPasien *head) {
     printf("=======================================================\n");
 }
 
+// Fungsi untuk menampilkan informasi kepada petugas medis terkait pasien yang perlu kembali kontrol
+void tampilkan_pasien_kontrol(RiwayatPasien *head_riwayat, Pasien *head_pasien) {
+    RiwayatPasien *riwayat = head_riwayat;
+    while (riwayat != NULL) {
+        if (strcmp(riwayat->kontrol, "Y") == 0) {
+            Pasien *pasien = head_pasien;
+            while (pasien != NULL) {
+                if (strcmp(pasien->id_pasien, riwayat->id_pasien) == 0) {
+                    printf("Nama Pasien: %s\n", pasien->nama_pasien);
+                    printf("Alamat: %s\n", pasien->alamat);
+                    printf("Kota: %s\n", pasien->kota);
+                    printf("Tempat Lahir: %s\n", pasien->tempat_lahir);
+                    printf("Tanggal Lahir: %s\n", pasien->tanggal_lahir);
+                    printf("Umur: %d\n", pasien->umur);
+                    printf("Nomor BPJS: %s\n", pasien->nomor_bpjs);
+                    printf("ID Pasien: %s\n", pasien->id_pasien);
+                    printf("Indeks Riwayat: %d\n", riwayat->indeksriwayat);
+                    printf("Tanggal Kunjungan: %s\n", riwayat->tanggal_kunjungan);
+                    printf("Diagnosis: %s\n", riwayat->diagnosis);
+                    printf("Tindakan: %s\n", riwayat->tindakan);
+                    printf("Biaya: %.2f\n", riwayat->biaya);
+                    printf("-------------------------\n");
+                    break;
+                }
+                pasien = pasien->next;
+            }
+        }
+        riwayat = riwayat->next;
+    }
+}
+
 // fungsi untuk menambahkan data pasien
 
 // fungsi untuk mengubah data pasien
@@ -459,6 +490,9 @@ int main() {
                 break;
             case 6:
                 // pasienperlukontrol();
+                printf("Informasi pasien yang perlu kembali kontrol:\n");
+                printf("-------------------------\n");
+                tampilkan_pasien_kontrol(head_riwayat, head_pasien);
                 break;
             case 7:
                 // writeFile();
@@ -469,4 +503,5 @@ int main() {
         }
     }
     return 0;
+    }
 }
