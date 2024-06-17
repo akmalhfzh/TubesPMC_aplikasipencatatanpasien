@@ -1,211 +1,121 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <time.h>
+#include <ctype.h>
 
-typedef struct dataPasien
-{
-    char nama[255];
-    char alamat[255];
-    char kota[255];
-    char tempatLahir[255];
-    int tanggalLahir[3];    // [0] = tanggal, [1] = bulan, [2] = tahun
+// Struktur data yang digunakan
+typedef struct Pasien {
+    int indekspasien;
+    char nama_pasien[100];
+    char alamat[150];
+    char kota[50];
+    char tempat_lahir[50];
+    char tanggal_lahir[30];
     int umur;
-    char noBpjs[255];
-    char idPasien[255];
-    struct dataPasien* next;
-} dataPasien;
+    char nomor_bpjs[20];
+    char id_pasien[50];
+    struct Pasien *next;
+} Pasien;
 
-typedef struct riwayatDiagnosis
-{
-    int tanggalPeriksa[3];    // [0] = tanggal, [1] = bulan, [2] = tahun
-    char idPasien[255];
-    char diagnosis[255];
-    char tindakan[255];
-    int tanggalKontrol[3];    // [0] = tanggal, [1] = bulan, [2] = tahun
-    int biaya;
-    struct riwayatDiagnosis* next;
-} riwayatDiagnosis;
+typedef struct RiwayatPasien {
+    int indeksriwayat;
+    char tanggal_kunjungan[20];
+    char id_pasien[50];
+    char diagnosis[100];
+    char tindakan[100];
+    char kontrol[20];
+    double biaya;
+    struct RiwayatPasien *next;
+} RiwayatPasien;
 
-dataPasien *dataPasienHead;
-riwayatDiagnosis *riwayatDiagnosisHead;
-
-void intToStringMonth(int month, char monthOut[255]){
-    if(month == 1){
-        strcpy(monthOut, "Januari");
+// Fungsi untuk menghapus whitespace berlebih di akhir string
+void trim_trailing_whitespace(char *str) {
+    char *end;
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) {
+        end--;
     }
-    else if(month == 2){
-        strcpy(monthOut, "Februari");
-    }
-    else if(month == 3){
-        strcpy(monthOut, "Maret");
-    }
-    else if(month == 4){
-        strcpy(monthOut, "April");
-    }
-    else if(month == 5){
-        strcpy(monthOut, "Mei");
-    }
-    else if(month == 6){
-        strcpy(monthOut, "Juni");
-    }
-    else if(month == 7){
-        strcpy(monthOut, "Juli");
-    }
-    else if(month == 8){
-        strcpy(monthOut, "Agustus");
-    }
-    else if(month == 9){
-        strcpy(monthOut, "September");
-    }
-    else if(month == 10){
-        strcpy(monthOut, "Oktober");
-    }
-    else if(month == 11){
-        strcpy(monthOut, "November");
-    }
-    else if(month == 12){
-        strcpy(monthOut, "Desember");
-    }
+    end[1] = '\0';
 }
 
-void readFile1(char fileName[255]){
-    FILE* stream = fopen(fileName, "r");
-    if (stream == NULL){
-        printf("File %s tidak ditemukan", fileName);
-        return;
+// Fungsi untuk membaca CSV riwayat dan menyimpan ke dalam linked list RiwayatPasien
+int baca_csv_riwayat(const char *nama_file, RiwayatPasien **head) {
+    FILE *file = fopen(nama_file, "r");
+    if (file == NULL) {
+        printf("File tidak ditemukan.\n");
+        return 0;
     }
 
-    char line[255];
-    char tempLine[255];
-    char* token;
-    int i = 0;
-
-    fgets(line, 255, stream);   
-    while(fgets(line, 255, stream)){
-        strcpy(tempLine, line);
-        token = strtok(tempLine, ";");  // skip data nomor
+    char baris[500];
+    fgets(baris, sizeof(baris), file);  // Membaca header
+    while (fgets(baris, sizeof(baris), file)) {
+        RiwayatPasien *riwayat = (RiwayatPasien*)malloc(sizeof(RiwayatPasien));
+        sscanf(baris, "%d,%19[^,],%49[^,],%99[^,],%99[^,],%19[^,],%lf",
+               &riwayat->indeksriwayat, riwayat->tanggal_kunjungan, riwayat->id_pasien,
+               riwayat->diagnosis, riwayat->tindakan, riwayat->kontrol, &riwayat->biaya);
+        riwayat->next = NULL;
         
-        // Parsing and adding to linked list dataPasien
-        dataPasien* newPasien = (dataPasien*) malloc(sizeof(dataPasien));
-        token = strtok(NULL, ";");  // nama
-        strcpy(newPasien->nama, token);
-        token = strtok(NULL, ";");  // alamat
-        strcpy(newPasien->alamat, token);
-        token = strtok(NULL, ";");  // kota
-        strcpy(newPasien->kota, token);
-        token = strtok(NULL, ";");  // tempatLahir
-        strcpy(newPasien->tempatLahir, token);
-        token = strtok(NULL, ";");  // tanggalLahir
-        newPasien->tanggalLahir[0] = atoi(token);
-        token = strtok(NULL, ";");  // tanggalLahir
-        newPasien->tanggalLahir[1] = atoi(token);
-        token = strtok(NULL, ";");  // tanggalLahir
-        newPasien->tanggalLahir[2] = atoi(token);
-        token = strtok(NULL, ";");  // umur
-        newPasien->umur = atoi(token);
-        token = strtok(NULL, ";");  // noBpjs
-        strcpy(newPasien->noBpjs, token);
-        token = strtok(NULL, ";");  // idPasien
-        strcpy(newPasien->idPasien, token);
-        
-        newPasien->next = dataPasienHead;
-        dataPasienHead = newPasien;
+        // Trim trailing whitespace
+        trim_trailing_whitespace(riwayat->id_pasien);
+
+        if (*head == NULL) {
+            *head = riwayat;
+        } else {
+            RiwayatPasien *temp = *head;
+            while (temp->next != NULL) {
+                temp = temp->next;
+            }
+            temp->next = riwayat;
+        }
     }
-    fclose(stream);
+    fclose(file);
+    return 1;
 }
 
-void readFile2(char fileName[255]){
-    FILE* stream = fopen(fileName, "r");
-    if (stream == NULL){
-        printf("File %s tidak ditemukan", fileName);
-        return;
+// Fungsi untuk membaca CSV data dan menyimpannya ke dalam linked list Pasien
+int baca_csv_pasien(const char *nama_file, Pasien **head) {
+    FILE *file = fopen(nama_file, "r");
+    if (file == NULL) {
+        printf("File tidak ditemukan.\n");
+        return 0;
     }
 
-    char line[255];
-    char tempLine[255];
-    char* token;
-    int i = 0;
+    char baris[500];
+    fgets(baris, sizeof(baris), file);  // Membaca header
+    while (fgets(baris, sizeof(baris), file)) {
+        Pasien *pasien = (Pasien*)malloc(sizeof(Pasien));
+        sscanf(baris, "%d,%99[^,],%149[^,],%49[^,],%49[^,],%29[^,],%d,%19[^,],%49[^,]",
+               &pasien->indekspasien, pasien->nama_pasien, pasien->alamat, pasien->kota,
+               pasien->tempat_lahir, pasien->tanggal_lahir, &pasien->umur, pasien->nomor_bpjs, pasien->id_pasien);
+        pasien->next = NULL;
 
-    fgets(line, 255, stream);   
-    while(fgets(line, 255, stream)){
-        strcpy(tempLine, line);
-        token = strtok(tempLine, ";");  // skip  data nomor
+        // Trim trailing whitespace
+        trim_trailing_whitespace(pasien->id_pasien);
 
-        // Parsing and adding to linked list riwayatDiagnosis
-        riwayatDiagnosis* newDiagnosis = (riwayatDiagnosis*) malloc(sizeof(riwayatDiagnosis));
-        token = strtok(NULL, ";");  // tanggal periksa
-        newDiagnosis->tanggalPeriksa[0] = atoi(token);
-        token = strtok(NULL, ";");  // tanggal periksa
-        newDiagnosis->tanggalPeriksa[1] = atoi(token);
-        token = strtok(NULL, ";");  // tanggal periksa
-        newDiagnosis->tanggalPeriksa[2] = atoi(token);
-        token = strtok(NULL, ";");  // id pasien
-        strcpy(newDiagnosis->idPasien, token);
-        token = strtok(NULL, ";");  // diagnosis
-        strcpy(newDiagnosis->diagnosis, token);
-        token = strtok(NULL, ";");  // tindakan
-        strcpy(newDiagnosis->tindakan, token);
-        token = strtok(NULL, ";");  // tanggal kontrol
-        newDiagnosis->tanggalKontrol[0] = atoi(token);
-        token = strtok(NULL, ";");  // tanggal kontrol
-        newDiagnosis->tanggalKontrol[1] = atoi(token);
-        token = strtok(NULL, ";");  // tanggal kontrol
-        newDiagnosis->tanggalKontrol[2] = atoi(token);
-        token = strtok(NULL, ";");  // biaya
-        newDiagnosis->biaya = atoi(token);
-        newDiagnosis->next = riwayatDiagnosisHead;
-        riwayatDiagnosisHead = newDiagnosis;
-
+        if (*head == NULL) {
+            *head = pasien;
+        } else {
+            Pasien *temp = *head;
+            while (temp->next != NULL) {
+                temp = temp->next;
+            }
+            temp->next = pasien;
+        }
     }
-    fclose(stream);
+    fclose(file);
+    return 1;
 }
 
-void writeFile1(char filename[255]){
-    FILE* stream = fopen(filename, "w");
-    if (stream == NULL){
-        printf("Error opening file %s for writing", filename);
-        return;
+// Fungsi main
+int main() {
+    Pasien *head_pasien = NULL;
+    RiwayatPasien *head_riwayat = NULL;
+
+    if (!baca_csv_pasien("DataPasien.csv", &head_pasien)) {
+        return 1;
     }
-    dataPasien* current = dataPasienHead;
-    while (current != NULL){
-        fprintf(stream, "%s;%s;%s;%s;%d;%d;%d;%s;%s\n", current->nama, current->alamat, current->kota, current->tempatLahir, current->tanggalLahir[0], current->tanggalLahir[1], current->tanggalLahir[2], current->noBpjs, current->idPasien);
-        current = current->next;
+    if (!baca_csv_riwayat("RiwayatPasien.csv", &head_riwayat)) {
+        return 1;
     }
-    fclose(stream);
-}
-
-void writeFile2(char filename[255]){
-    FILE* stream = fopen(filename, "w");
-    if (stream == NULL){
-        printf("Error opening file %s for writing", filename);
-        return;
-    }
-    riwayatDiagnosis* current = riwayatDiagnosisHead;
-    while (current != NULL){
-        fprintf(stream, "%d;%s;%s;%d;%d\n", current->tanggalPeriksa[0], current->tanggalPeriksa[1], current->tanggalPeriksa[2], current->idPasien, current->diagnosis, current->tindakan, current->tanggalKontrol[0], current->tanggalKontrol[1], current->tanggalKontrol[2], current->biaya);
-        current = current->next;
-    }
-    fclose(stream);
-}
-
-void writeFile(){
-    writeFile1("tes1.csv");
-    writeFile2("tes2.csv");
-}
-
-int main(){    
-    // Allocating memory for dataPasienHead and riwayatDiagnosisHead
-    dataPasienHead = (dataPasien*) malloc(sizeof(dataPasien));
-    riwayatDiagnosisHead = (riwayatDiagnosis*) malloc(sizeof(riwayatDiagnosis));
-
-    // Reading CSV files
-    readFile1("DataPasien.csv");
-    readFile2("RiwayatDiagnosis.csv");
-
-    // Writing combined data to CSV files
-    writeFile();
-
     return 0;
 }
