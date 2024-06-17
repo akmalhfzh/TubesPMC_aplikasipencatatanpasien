@@ -485,48 +485,39 @@ int main() {
             case 1:
             int pilihancase1;
             printf("\nMenu:\n");
-            printf("11. Tambah Data Pasien\n");
-            printf("12. Ubah Data Pasien\n");
-            printf("13. Cari Data Pasien\n");
-            printf("14. Hapus Data Pasien\n");
+            printf("1. Tambah Data Pasien\n");
+            printf("2. Ubah Data Pasien\n");
+            printf("3. Cari Data Pasien\n");
+            printf("4. Hapus Data Pasien\n");
             printf("pilihan: ");
             scanf("%d", &pilihancase1);
-            switch (pilihancase1) {
-                case 11:
-                // tambahDataPasien();
-                    break;
-                case 12:
-                // ubahDataPasien();
-                    break;
-                case 13:
-                // cariDataPasien();
-                    break;
-                case 14:
-                // hapusDataPasien();
-                    break;
-
+                if (pilihancase1 == 1){
+                    // tambahDataPasien();
+                } else if (pilihancase1 == 2){
+                    // ubahDataPasien();
+                } else if (pilihancase1 == 3){
+                    // cariDataPasien();
+                } else if (pilihancase1 == 4){
+                    // hapusDataPasien();
+                }
             case 2:
             int pilihancase2;
             printf("\nMenu:\n");
-            printf("21. Tambah Riwayat Diagnosis\n");
-            printf("22. Ubah Riwayat Diagnosis\n");
-            printf("23. Cari Riwayat Diagnosis\n");
-            printf("24. Hapus Riwayat Diagnosis\n");
+            printf("1. Tambah Riwayat Diagnosis\n");
+            printf("2. Ubah Riwayat Diagnosis\n");
+            printf("3. Cari Riwayat Diagnosis\n");
+            printf("4. Hapus Riwayat Diagnosis\n");
             printf("pilihan: ");
             scanf("%d", &pilihancase2);
-            switch (pilihancase2) {
-                case 21:
-                // tambahRiwayatDiagnosis();
-                    break;
-                case 22:
-                // ubahRiwayatDiagnosis();
-                    break;
-                case 23:
-                // cariRiwayatDiagnosis();
-                    break;
-                case 24:
-                // hapusRiwayatDiagnosis();
-                    break;
+                if (pilihancase2 == 1){
+                    // tambahDataPasien();
+                } else if (pilihancase2 == 2){
+                    // ubahDataPasien();
+                } else if (pilihancase2 == 3){
+                    // cariDataPasien();
+                } else if (pilihancase2 == 4){
+                    // hapusDataPasien();
+                }
             case 3:
                 {
                 char id_pasien[50];
@@ -558,4 +549,4 @@ int main() {
         }
     }
     return 0;
-    }}}
+    }
