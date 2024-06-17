@@ -405,10 +405,75 @@ void tampilkan_pasien_kontrol(RiwayatPasien *head_riwayat, Pasien *head_pasien) 
 }
 
 // fungsi untuk menambahkan data pasien
+void tambahPasien(int indekspasien, char nama_pasien[], char alamat[], char kota[], char tempat_lahir[], char tanggal_lahir[], int umur, char nomor_bpjs[], char id_pasien[]) {
+    Pasien* new_pasien = (Pasien*)malloc(sizeof(Pasien));
+    new_pasien->indekspasien = indekspasien;
+    strcpy(new_pasien->nama_pasien, nama_pasien);
+    strcpy(new_pasien->alamat, alamat);
+    strcpy(new_pasien->kota, kota);
+    strcpy(new_pasien->tempat_lahir, tempat_lahir);
+    strcpy(new_pasien->tanggal_lahir, tanggal_lahir);
+    new_pasien->umur = umur;
+    strcpy(new_pasien->nomor_bpjs, nomor_bpjs);
+    strcpy(new_pasien->id_pasien, id_pasien);
+    new_pasien->next = head_pasien;
+    head_pasien = new_pasien;
+}
 
 // fungsi untuk mengubah data pasien
+void ubahPasien(char id_pasien[], int indekspasien, char nama_pasien[], char alamat[], char kota[], char tempat_lahir[], char tanggal_lahir[], int umur, char nomor_bpjs[]) {
+    Pasien* current = head_pasien;
+    while (current != NULL) {
+        if (strcmp(current->id_pasien, id_pasien) == 0) {
+            current->indekspasien = indekspasien;
+            strcpy(current->nama_pasien, nama_pasien);
+            strcpy(current->alamat, alamat);
+            strcpy(current->kota, kota);
+            strcpy(current->tempat_lahir, tempat_lahir);
+            strcpy(current->tanggal_lahir, tanggal_lahir);
+            current->umur = umur;
+            strcpy(current->nomor_bpjs, nomor_bpjs);
+            printf("Data pasien dengan ID %s berhasil diubah.\n", id_pasien);
+            return;
+        }
+        current = current->next;
+    }
+    printf("Pasien dengan ID %s tidak ditemukan.\n", id_pasien);
+}
 
 // fungsi untuk menghapus data pasien
+void hapusPasien(char id_pasien[]) {
+    Pasien* current = head_pasien;
+    Pasien* previous = NULL;
+    while (current != NULL) {
+        if (strcmp(current->id_pasien, id_pasien) == 0) {
+            if (previous == NULL) {
+                head_pasien = current->next;
+            } else {
+                previous->next = current->next;
+            }
+            free(current);
+            printf("Pasien dengan ID %s berhasil dihapus.\n", id_pasien);
+            return;
+        }
+        previous = current;
+        current = current->next;
+    }
+    printf("Pasien dengan ID %s tidak ditemukan.\n", id_pasien);
+}
+
+// fungsi untuk mencari data pasien
+void cariPasien(char nama_pasien[]) {
+    Pasien* current = head_pasien;
+    while (current != NULL) {
+        if (strstr(current->nama_pasien, nama_pasien) != NULL) {
+            printf("ID: %s, Nama Lengkap: %s, Alamat: %s, Kota: %s, Tempat Lahir: %s, Tanggal Lahir: %s, Umur: %d, No BPJS: %s\n",
+                   current->id_pasien, current->nama_pasien, current->alamat, current->kota,
+                   current->tempat_lahir, current->tanggal_lahir, current->umur, current->nomor_bpjs);
+        }
+        current = current->next;
+    }
+}
 
 // Fungsi main
 int main() {
@@ -439,28 +504,126 @@ int main() {
             case 1:
             int pilihancase1;
             printf("\nMenu:\n");
-            printf("1. Tambah Data Pasien\n");
-            printf("2. Ubah Data Pasien\n");
-            printf("3. Hapus Data Pasien\n");
+            printf("11. Tambah Data Pasien\n");
+            printf("12. Ubah Data Pasien\n");
+            printf("13. Cari Data Pasien\n");
+            printf("14. Hapus Data Pasien\n");
             printf("pilihan: ");
             scanf("%d", &pilihancase1);
             switch (pilihancase1) {
                 case 11:
                 // tambahDataPasien();
+                    int indekspasien, umur;
+                    char nama_pasien[100], alamat[150], kota[50], tempat_lahir[50], tanggal_lahir[30], nomor_bpjs[20], id_pasien[50];
+
+                    printf("Masukkan indeks pasien: ");
+                    scanf("%d", &indekspasien);
+                    getchar();  // to consume the newline character
+
+                    printf("Masukkan nama pasien: ");
+                    fgets(nama_pasien, sizeof(nama_pasien), stdin);
+                    nama_pasien[strcspn(nama_pasien, "\n")] = 0;  // to remove the newline character
+
+                    printf("Masukkan alamat: ");
+                    fgets(alamat, sizeof(alamat), stdin);
+                    alamat[strcspn(alamat, "\n")] = 0;  // to remove the newline character
+
+                    printf("Masukkan kota: ");
+                    fgets(kota, sizeof(kota), stdin);
+                    kota[strcspn(kota, "\n")] = 0;  // to remove the newline character
+
+                    printf("Masukkan tempat lahir: ");
+                    fgets(tempat_lahir, sizeof(tempat_lahir), stdin);
+                    tempat_lahir[strcspn(tempat_lahir, "\n")] = 0;  // to remove the newline character
+
+                    printf("Masukkan tanggal lahir: ");
+                    fgets(tanggal_lahir, sizeof(tanggal_lahir), stdin);
+                    tanggal_lahir[strcspn(tanggal_lahir, "\n")] = 0;  // to remove the newline character
+
+                    printf("Masukkan umur: ");
+                    scanf("%d", &umur);
+                    getchar();  // to consume the newline character
+
+                    printf("Masukkan nomor BPJS: ");
+                    fgets(nomor_bpjs, sizeof(nomor_bpjs), stdin);
+                    nomor_bpjs[strcspn(nomor_bpjs, "\n")] = 0;  // to remove the newline character
+
+                    printf("Masukkan ID pasien: ");
+                    fgets(id_pasien, sizeof(id_pasien), stdin);
+                    id_pasien[strcspn(id_pasien, "\n")] = 0;  // to remove the newline character
+
+                    tambahPasien(indekspasien, nama_pasien, alamat, kota, tempat_lahir, tanggal_lahir, umur, nomor_bpjs, id_pasien);
                     break;
                 case 12:
                 // ubahDataPasien();
+                    char id_pasien[50];
+                    int indekspasien, umur;
+                    char nama_pasien[100], alamat[150], kota[50], tempat_lahir[50], tanggal_lahir[30], nomor_bpjs[20];
+
+                    printf("Masukkan ID pasien yang akan diubah: ");
+                    fgets(id_pasien, sizeof(id_pasien), stdin);
+                    id_pasien[strcspn(id_pasien, "\n")] = 0;  // to remove the newline character
+
+                    printf("Masukkan indeks pasien baru: ");
+                    scanf("%d", &indekspasien);
+                    getchar();  // to consume the newline character
+
+                    printf("Masukkan nama pasien baru: ");
+                    fgets(nama_pasien, sizeof(nama_pasien), stdin);
+                    nama_pasien[strcspn(nama_pasien, "\n")] = 0;  // to remove the newline character
+
+                    printf("Masukkan alamat baru: ");
+                    fgets(alamat, sizeof(alamat), stdin);
+                    alamat[strcspn(alamat, "\n")] = 0;  // to remove the newline character
+
+                    printf("Masukkan kota baru: ");
+                    fgets(kota, sizeof(kota), stdin);
+                    kota[strcspn(kota, "\n")] = 0;  // to remove the newline character
+
+                    printf("Masukkan tempat lahir baru: ");
+                    fgets(tempat_lahir, sizeof(tempat_lahir), stdin);
+                    tempat_lahir[strcspn(tempat_lahir, "\n")] = 0;  // to remove the newline character
+
+                    printf("Masukkan tanggal lahir baru: ");
+                    fgets(tanggal_lahir, sizeof(tanggal_lahir), stdin);
+                    tanggal_lahir[strcspn(tanggal_lahir, "\n")] = 0;  // to remove the newline character
+
+                    printf("Masukkan umur baru: ");
+                    scanf("%d", &umur);
+                    getchar();  // to consume the newline character
+
+                    printf("Masukkan nomor BPJS baru: ");
+                    fgets(nomor_bpjs, sizeof(nomor_bpjs), stdin);
+                    nomor_bpjs[strcspn(nomor_bpjs, "\n")] = 0;  // to remove the newline character
+
+                    ubahPasien(id_pasien, indekspasien, nama_pasien, alamat, kota, tempat_lahir, tanggal_lahir, umur, nomor_bpjs);
                     break;
                 case 13:
+                // cariDataPasien();
+                    char nama_pasien[100];
+                    printf("Masukkan nama pasien yang dicari: ");
+                    fgets(nama_pasien, sizeof(nama_pasien), stdin);
+                    nama_pasien[strcspn(nama_pasien, "\n")] = 0;  // to remove the newline character
+
+                    cariPasien(nama_pasien);
+                    break;
+                case 14:
                 // hapusDataPasien();
+                    char id_pasien[50];
+                    printf("Masukkan ID pasien yang akan dihapus: ");
+                    fgets(id_pasien, sizeof(id_pasien), stdin);
+                    id_pasien[strcspn(id_pasien, "\n")] = 0;  // to remove the newline character
+
+                    hapusPasien(id_pasien);
                     break;
 
             case 2:
             int pilihancase2;
             printf("\nMenu:\n");
-            printf("1. Tambah Riwayat Diagnosis\n");
-            printf("2. Ubah Riwayat Diagnosis\n");
-            printf("3. Hapus Riwayat Diagnosis\n");
+            printf("21. Tambah Riwayat Diagnosis\n");
+            printf("22. Ubah Riwayat Diagnosis\n");
+            printf("23. Cari Riwayat Diagnosis\n");
+            printf("24. Hapus Riwayat Diagnosis\n");
             printf("pilihan: ");
             scanf("%d", &pilihancase2);
             switch (pilihancase2) {
@@ -471,6 +634,9 @@ int main() {
                 // ubahRiwayatDiagnosis();
                     break;
                 case 23:
+                // cariRiwayatDiagnosis();
+                    break;
+                case 24:
                 // hapusRiwayatDiagnosis();
                     break;
             case 3:
