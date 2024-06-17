@@ -353,6 +353,47 @@ void pasienPerluKontrol() {
     }
 }
 
+// Fungsi untuk menampilkan riwayat medis pasien berdasarkan ID pasien
+void displayPatientHistory(const char *patientID) {
+    dataPasien *pasien = dataPasienHead;
+    while (pasien != NULL) {
+        if (strcmp(pasien->idPasien, patientID) == 0) {
+            printf("Nama: %s\n", pasien->nama);
+            printf("Alamat: %s\n", pasien->alamat);
+            printf("Kota: %s\n", pasien->kota);
+            printf("Tempat Lahir: %s\n", pasien->tempatLahir);
+            printf("Tanggal Lahir: %d-%d-%d\n", pasien->tanggalLahir[0], pasien->tanggalLahir[1], pasien->tanggalLahir[2]);
+            printf("Umur: %d\n", pasien->umur);
+            printf("No BPJS: %s\n", pasien->noBpjs);
+            printf("ID Pasien: %s\n", pasien->idPasien);
+            break;
+        }
+        pasien = pasien->next;
+    }
+    
+    if (pasien == NULL) {
+        printf("Pasien dengan ID %s tidak ditemukan.\n", patientID);
+        return;
+    }
+
+    printf("\nRiwayat Medis:\n");
+    riwayatDiagnosis *diagnosis = riwayatDiagnosisHead;
+    while (diagnosis != NULL) {
+        if (strcmp(diagnosis->idPasien, patientID) == 0) {
+            char month[255];
+            intToStringMonth(diagnosis->tanggalPeriksa[1], month);
+            printf("Tanggal Periksa: %d %s %d\n", diagnosis->tanggalPeriksa[0], month, diagnosis->tanggalPeriksa[2]);
+            printf("Diagnosis: %s\n", diagnosis->diagnosis);
+            printf("Tindakan: %s\n", diagnosis->tindakan);
+            intToStringMonth(diagnosis->tanggalKontrol[1], month);
+            printf("Tanggal Kontrol: %d %s %d\n", diagnosis->tanggalKontrol[0], month, diagnosis->tanggalKontrol[2]);
+            printf("Biaya: %d\n", diagnosis->biaya);
+            printf("\n");
+        }
+        diagnosis = diagnosis->next;
+    }
+}
+
 // Fungsi utama
 int main(){    
     // Membaca file CSV
@@ -370,7 +411,8 @@ int main(){
         printf("6. Laporan Pendapatan\n");
         printf("7. Jumlah Pasien\n");
         printf("8. Pasien Perlu Kontrol\n");
-        printf("9. Simpan dan Keluar\n");
+        printf("9. Informasi Pasien dan Riwayat Medis\n");
+        printf("10. Simpan dan Keluar\n");
         printf("Pilihan: ");
         scanf("%d", &pilihan);
 
@@ -399,8 +441,15 @@ int main(){
             case 8:
                 pasienPerluKontrol();
                 break;
-            case 9:
-                writeFile();
+            case 9:{
+                char idPasien[255];
+                printf("Masukkan ID Pasien: ");
+                scanf("%s", idPasien);
+                displayPatientHistory(idPasien);
+                break;
+            }
+            case 10:
+            writeFile();
                 printf("Data telah disimpan. Program selesai.\n");
                 return 0;
             default:
