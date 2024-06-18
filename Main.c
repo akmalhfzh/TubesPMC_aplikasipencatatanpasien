@@ -3,6 +3,10 @@
 #include <string.h>
 #include <ctype.h>
 
+#define MAX_LINE_LENGTH 1024
+#define MAX_YEARS 10
+#define MAX_MONTHS 12
+
 // Struktur data yang digunakan
 typedef struct Pasien {
     int indekspasien;
@@ -459,6 +463,76 @@ void tampilkan_riwayat_pasien(RiwayatPasien *head) {
     }
 }
 
+// Fungsi untuk memparse tanggal dalam format DD-MM-YYYY
+void parse_date(const char *date, int *day, int *month, int *year) {
+    sscanf(date, "%d-%d-%d", day, month, year);
+}
+
+// Fungsi untuk memeriksa apakah ada data pendapatan bulanan yang sudah ada
+int find_monthly_index(RiwayatPasien *monthly_revenues, int count, int year, int month) {
+    for (int i = 0; i < count; i++) {
+        int day, m, y;
+        parse_date(monthly_revenues[i].tanggal_kunjungan, &day, &m, &y);
+        if (y == year && m == month) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// Fungsi untuk memeriksa apakah ada data pendapatan tahunan yang sudah ada
+int find_annual_index(RiwayatPasien *annual_revenues, int count, int year) {
+    for (int i = 0; i < count; i++) {
+        int day, month, y;
+        parse_date(annual_revenues[i].tanggal_kunjungan, &day, &month, &y);
+        if (y == year) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void process_revenues(RiwayatPasien *head_riwayat, RiwayatPasien monthly_revenues[], int *monthly_count, RiwayatPasien annual_revenues[], int *annual_count, double *total_revenue) {
+    *monthly_count = 0;
+    *annual_count = 0;
+    *total_revenue = 0.0;
+
+    RiwayatPasien *current = head_riwayat;
+    while (current != NULL) {
+        int day, month, year;
+        parse_date(current->tanggal_kunjungan, &day, &month, &year);
+
+        // Menghitung total pendapatan tiap bulan
+        int monthly_index = find_monthly_index(monthly_revenues, *monthly_count, year, month);
+        if (monthly_index != -1) {
+            monthly_revenues[monthly_index].biaya += current->biaya;
+        } else {
+            if (*monthly_count < MAX_YEARS * MAX_MONTHS) {  // Pastikan tidak melebihi batas array
+                monthly_revenues[*monthly_count] = *current;
+                (*monthly_count)++;
+            } else {
+                printf("Warning: Monthly revenue array is full, skipping data for month %d/%d\n", month, year);
+            }
+        }
+
+        // Menghitung total pendapatan tiap tahun
+        int annual_index = find_annual_index(annual_revenues, *annual_count, year);
+        if (annual_index != -1) {
+            annual_revenues[annual_index].biaya += current->biaya;
+        } else {
+            if (*annual_count < MAX_YEARS) {  // Pastikan tidak melebihi batas array
+                annual_revenues[*annual_count] = *current;
+                (*annual_count)++;
+            } else {
+                printf("Warning: Annual revenue array is full, skipping data for year %d\n", year);
+            }
+        }
+
+        *total_revenue += current->biaya;
+        current = current->next;
+    }
+}
+
 // fungsi untuk menambahkan data pasien
 
 
@@ -484,6 +558,8 @@ int main() {
     }
 
     int pilihan;
+    int pilihancase1;
+    int pilihancase2;
     while (1) {
         printf("\nMenu:\n");
         printf("1. Data Pasien\n");
@@ -498,7 +574,6 @@ int main() {
 
         switch (pilihan) {
             case 1:
-            int pilihancase1;
             printf("\nMenu:\n");
             printf("1. Tambah Data Pasien\n");
             printf("2. Ubah Data Pasien\n");
@@ -508,15 +583,18 @@ int main() {
             scanf("%d", &pilihancase1);
                 if (pilihancase1 == 1){
                     // tambahDataPasien();
+                    break;
                 } else if (pilihancase1 == 2){
                     // ubahDataPasien();
+                    break;
                 } else if (pilihancase1 == 3){
                     // cariDataPasien();
+                    break;
                 } else if (pilihancase1 == 4){
                     // hapusDataPasien();
+                    break;
                 }
             case 2:
-            int pilihancase2;
             printf("\nMenu:\n");
             printf("1. Tambah Riwayat Diagnosis\n");
             printf("2. Ubah Riwayat Diagnosis\n");
@@ -526,12 +604,16 @@ int main() {
             scanf("%d", &pilihancase2);
                 if (pilihancase2 == 1){
                     // tambahDataPasien();
+                    break;
                 } else if (pilihancase2 == 2){
                     // ubahDataPasien();
+                    break;
                 } else if (pilihancase2 == 3){
                     // cariDataPasien();
+                    break;
                 } else if (pilihancase2 == 4){
                     // hapusDataPasien();
+                    break;
                 }
             case 3:
                 {
@@ -542,8 +624,31 @@ int main() {
                 informasi_pasien(head_pasien, id_pasien);
                 informasi_riwayat_pasien(head_riwayat, id_pasien);
                 }
+                break;
             case 4:
                 // laporanpendapatan();
+                RiwayatPasien monthly_revenues[MAX_YEARS * MAX_MONTHS] = {0};
+                RiwayatPasien annual_revenues[MAX_YEARS] = {0};
+                int monthly_count, annual_count;
+                double total_revenue;
+
+                process_revenues(head_riwayat, monthly_revenues, &monthly_count, annual_revenues, &annual_count, &total_revenue);
+
+                printf("Pendapatan Bulanan:\n");
+                for (int i = 0; i < monthly_count; i++) {
+                    int day, month, year;
+                    parse_date(monthly_revenues[i].tanggal_kunjungan, &day, &month, &year);
+                    printf("Tahun: %d, Bulan: %d, Pendapatan: %.2f\n", year, month, monthly_revenues[i].biaya);
+                }
+
+                printf("\nPendapatan Tahunan:\n");
+                for (int i = 0; i < annual_count; i++) {
+                    int day, month, year;
+                    parse_date(annual_revenues[i].tanggal_kunjungan, &day, &month, &year);
+                    printf("Tahun: %d, Pendapatan: %.2f\n", year, annual_revenues[i].biaya);
+                }
+
+                printf("\nTotal Pendapatan Klinik: %.2f\n", total_revenue);
                 break;
             case 5:
                 jumlah_pasien_dan_penyakit_per_tahun(head_riwayat);
