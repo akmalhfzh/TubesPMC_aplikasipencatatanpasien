@@ -444,6 +444,21 @@ void tampilkan_pasien_kontrol(RiwayatPasien *head_riwayat, Pasien *head_pasien) 
     }
 }
 
+// Fungsi untuk menampilkan semua riwayat kunjungan pasien
+void tampilkan_riwayat_pasien(RiwayatPasien *head) {
+    RiwayatPasien *riwayat = head;
+    while (riwayat != NULL) {
+        printf("Tanggal Kunjungan: %s\n", riwayat->tanggal_kunjungan);
+        printf("ID Pasien: %s\n", riwayat->id_pasien);
+        printf("Diagnosis: %s\n", riwayat->diagnosis);
+        printf("Tindakan: %s\n", riwayat->tindakan);
+        printf("Kontrol: %s\n", riwayat->kontrol);
+        printf("Biaya: %.2f\n", riwayat->biaya);
+        printf("-------------------------\n");
+        riwayat = riwayat->next;
+    }
+}
+
 // fungsi untuk menambahkan data pasien
 
 
@@ -534,10 +549,10 @@ int main() {
                 jumlah_pasien_dan_penyakit_per_tahun(head_riwayat);
                 break;
             case 6:
-                // pasienperlukontrol();
-                printf("Informasi pasien yang perlu kembali kontrol:\n");
+                // Memanggil fungsi untuk menampilkan semua riwayat pasien
+                printf("Informasi riwayat pasien:\n");
                 printf("-------------------------\n");
-                tampilkan_pasien_kontrol(head_riwayat, head_pasien);
+                tampilkan_riwayat_pasien(head_riwayat);
                 break;
             case 7:
                 // writeFile();
