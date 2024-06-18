@@ -452,15 +452,28 @@ void tampilkan_pasien_kontrol(RiwayatPasien *head_riwayat, Pasien *head_pasien) 
 // Fungsi untuk menampilkan semua riwayat kunjungan pasien
 void tampilkan_riwayat_pasien(RiwayatPasien *head) {
     RiwayatPasien *riwayat = head;
+    char ID[20];
+    int found;
+    printf("Input patient ID: ");
+    fgets(ID, 20, stdin);
+    ID[strcspn(ID, "\n")] = 0;
+
+
     while (riwayat != NULL) {
-        printf("Tanggal Kunjungan: %s\n", riwayat->tanggal_kunjungan);
-        printf("ID Pasien: %s\n", riwayat->id_pasien);
-        printf("Diagnosis: %s\n", riwayat->diagnosis);
-        printf("Tindakan: %s\n", riwayat->tindakan);
-        printf("Kontrol: %s\n", riwayat->kontrol);
-        printf("Biaya: %.2f\n", riwayat->biaya);
-        printf("-------------------------\n");
+        if (strcmp(riwayat->id_pasien, ID) == 0) {
+            found = 1;
+            printf("Tanggal Kunjungan: %s\n", riwayat->tanggal_kunjungan);
+            printf("ID Pasien: %s\n", riwayat->id_pasien);
+            printf("Diagnosis: %s\n", riwayat->diagnosis);
+            printf("Tindakan: %s\n", riwayat->tindakan);
+            printf("Kontrol: %s\n", riwayat->kontrol);
+            printf("Biaya: %.2f\n", riwayat->biaya);
+            printf("-------------------------\n");
+            }
         riwayat = riwayat->next;
+    }
+    if (found == 0){
+        printf("\nTheres no patient with the inputted ID!\n\n");
     }
 }
 
