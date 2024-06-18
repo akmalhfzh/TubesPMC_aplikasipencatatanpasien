@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 // Struktur data yang digunakan
 typedef struct Pasien {
@@ -28,14 +27,75 @@ typedef struct RiwayatPasien {
     struct RiwayatPasien *next;
 } RiwayatPasien;
 
+typedef struct BiayaTindakan {
+    int indekstindakan;
+    char aktivitas[20];
+    double biayatindakan;
+    struct BiayaTindakan *next;
+} BiayaTindakan;
+
+typedef struct DiseaseCount {
+    char disease[100];
+    int count;
+    struct DiseaseCount *next;
+} DiseaseCount;
+
+typedef struct MonthYearCount {
+    char month_year[20];
+    int patient_count;
+    DiseaseCount *disease_head;
+    struct MonthYearCount *next;
+} MonthYearCount;
+
+typedef struct YearCount {
+    char year[5];
+    MonthYearCount *month_head;
+    struct YearCount *next;
+} YearCount;
+
 // Fungsi untuk menghapus whitespace berlebih di akhir string
 void trim_trailing_whitespace(char *str) {
     char *end;
     end = str + strlen(str) - 1;
-    while (end > str && isspace((unsigned char)*end)) {
+    while (end > str && (*end == ' ' || *end == '\n' || *end == '\r')) {
         end--;
     }
     end[1] = '\0';
+}
+
+// Fungsi untuk membaca CSV pasien dan menyimpan ke dalam linked list Pasien
+int baca_csv_pasien(const char *nama_file, Pasien **head) {
+    FILE *file = fopen(nama_file, "r");
+    if (file == NULL) {
+        printf("File tidak ditemukan.\n");
+        return 0;
+    }
+
+    char baris[500];
+    fgets(baris, sizeof(baris), file);  // Membaca header
+    while (fgets(baris, sizeof(baris), file)) {
+        Pasien *pasien = (Pasien*)malloc(sizeof(Pasien));
+        sscanf(baris, "%d,%99[^,],%149[^,],%49[^,],%49[^,],%29[^,],%d,%19[^,],%49[^,]",
+               &pasien->indekspasien, pasien->nama_pasien, pasien->alamat, pasien->kota,
+               pasien->tempat_lahir, pasien->tanggal_lahir, &pasien->umur,
+               pasien->nomor_bpjs, pasien->id_pasien);
+        pasien->next = NULL;
+        
+        // Trim trailing whitespace
+        trim_trailing_whitespace(pasien->id_pasien);
+
+        if (*head == NULL) {
+            *head = pasien;
+        } else {
+            Pasien *temp = *head;
+            while (temp->next != NULL) {
+                temp = temp->next;
+            }
+            temp->next = pasien;
+        }
+    }
+    fclose(file);
+    return 1;
 }
 
 // Fungsi untuk membaca CSV riwayat dan menyimpan ke dalam linked list RiwayatPasien
@@ -72,67 +132,17 @@ int baca_csv_riwayat(const char *nama_file, RiwayatPasien **head) {
     return 1;
 }
 
-// Fungsi untuk membaca CSV data dan menyimpannya ke dalam linked list Pasien
-int baca_csv_pasien(const char *nama_file, Pasien **head) {
-    FILE *file = fopen(nama_file, "r");
-    if (file == NULL) {
-        printf("File tidak ditemukan.\n");
-        return 0;
-    }
-
-    char baris[500];
-    fgets(baris, sizeof(baris), file);  // Membaca header
-    while (fgets(baris, sizeof(baris), file)) {
-        Pasien *pasien = (Pasien*)malloc(sizeof(Pasien));
-        sscanf(baris, "%d,%99[^,],%149[^,],%49[^,],%49[^,],%29[^,],%d,%19[^,],%49[^,]",
-               &pasien->indekspasien, pasien->nama_pasien, pasien->alamat, pasien->kota,
-               pasien->tempat_lahir, pasien->tanggal_lahir, &pasien->umur, pasien->nomor_bpjs, pasien->id_pasien);
-        pasien->next = NULL;
-
-        // Trim trailing whitespace
-        trim_trailing_whitespace(pasien->id_pasien);
-
-        if (*head == NULL) {
-            *head = pasien;
-        } else {
-            Pasien *temp = *head;
-            while (temp->next != NULL) {
-                temp = temp->next;
-            }
-            temp->next = pasien;
-        }
-    }
-    fclose(file);
-    return 1;
-}
-
-// Fungsi untuk menampilkan informasi kepada petugas medis terkait pasien yang perlu kembali kontrol
-void tampilkan_pasien_kontrol(RiwayatPasien *head_riwayat, Pasien *head_pasien) {
-    RiwayatPasien *riwayat = head_riwayat;
+// Fungsi untuk menampilkan semua riwayat kunjungan pasien
+void tampilkan_riwayat_pasien(RiwayatPasien *head) {
+    RiwayatPasien *riwayat = head;
     while (riwayat != NULL) {
-        if (strcmp(riwayat->kontrol, "Y") == 0) {
-            Pasien *pasien = head_pasien;
-            while (pasien != NULL) {
-                if (strcmp(pasien->id_pasien, riwayat->id_pasien) == 0) {
-                    printf("Nama Pasien: %s\n", pasien->nama_pasien);
-                    printf("Alamat: %s\n", pasien->alamat);
-                    printf("Kota: %s\n", pasien->kota);
-                    printf("Tempat Lahir: %s\n", pasien->tempat_lahir);
-                    printf("Tanggal Lahir: %s\n", pasien->tanggal_lahir);
-                    printf("Umur: %d\n", pasien->umur);
-                    printf("Nomor BPJS: %s\n", pasien->nomor_bpjs);
-                    printf("ID Pasien: %s\n", pasien->id_pasien);
-                    printf("Indeks Riwayat: %d\n", riwayat->indeksriwayat);
-                    printf("Tanggal Kunjungan: %s\n", riwayat->tanggal_kunjungan);
-                    printf("Diagnosis: %s\n", riwayat->diagnosis);
-                    printf("Tindakan: %s\n", riwayat->tindakan);
-                    printf("Biaya: %.2f\n", riwayat->biaya);
-                    printf("-------------------------\n");
-                    break;
-                }
-                pasien = pasien->next;
-            }
-        }
+        printf("Tanggal Kunjungan: %s\n", riwayat->tanggal_kunjungan);
+        printf("ID Pasien: %s\n", riwayat->id_pasien);
+        printf("Diagnosis: %s\n", riwayat->diagnosis);
+        printf("Tindakan: %s\n", riwayat->tindakan);
+        printf("Kontrol: %s\n", riwayat->kontrol);
+        printf("Biaya: %.2f\n", riwayat->biaya);
+        printf("-------------------------\n");
         riwayat = riwayat->next;
     }
 }
@@ -141,17 +151,20 @@ int main() {
     Pasien *head_pasien = NULL;
     RiwayatPasien *head_riwayat = NULL;
 
+    // Membaca data dari file CSV
     if (!baca_csv_pasien("DataPasien.csv", &head_pasien)) {
+        printf("Gagal membaca file DataPasien.csv.\n");
         return 1;
     }
     if (!baca_csv_riwayat("RiwayatPasien.csv", &head_riwayat)) {
+        printf("Gagal membaca file RiwayatPasien.csv.\n");
         return 1;
     }
 
-    // Memanggil fungsi untuk menampilkan informasi pasien yang perlu kontrol
-    printf("Informasi pasien yang perlu kembali kontrol:\n");
+    // Memanggil fungsi untuk menampilkan semua riwayat pasien
+    printf("Informasi riwayat pasien:\n");
     printf("-------------------------\n");
-    tampilkan_pasien_kontrol(head_riwayat, head_pasien);
+    tampilkan_riwayat_pasien(head_riwayat);
 
     return 0;
 }
