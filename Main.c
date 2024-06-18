@@ -9,13 +9,13 @@
 
 // Struktur data yang digunakan
 typedef struct Pasien {
+    int umur;
     int indekspasien;
     char nama_pasien[100];
     char alamat[150];
     char kota[50];
     char tempat_lahir[50];
     char tanggal_lahir[30];
-    int umur;
     char nomor_bpjs[20];
     char id_pasien[50];
     struct Pasien *next;
@@ -32,6 +32,7 @@ typedef struct RiwayatPasien {
     double biaya;
     struct RiwayatPasien *next;
 } RiwayatPasien;
+RiwayatPasien* head_riwayat = NULL;
 
 typedef struct BiayaTindakan {
     int indekstindakan;
@@ -533,17 +534,328 @@ void process_revenues(RiwayatPasien *head_riwayat, RiwayatPasien monthly_revenue
     }
 }
 
-// fungsi untuk menambahkan data pasien
+// Fungsi untuk menambah data pasien
+void tambah_pasien(int umur, int indekspasien, const char *nama_pasien, const char *alamat, const char *kota, const char *tempat_lahir, const char *tanggal_lahir, const char *nomor_bpjs, const char *id_pasien) {
+    Pasien *new_pasien = (Pasien*)malloc(sizeof(Pasien));
+    new_pasien->umur = umur;
+    new_pasien->indekspasien = indekspasien;
+    strcpy(new_pasien->nama_pasien, nama_pasien);
+    strcpy(new_pasien->alamat, alamat);
+    strcpy(new_pasien->kota, kota);
+    strcpy(new_pasien->tempat_lahir, tempat_lahir);
+    strcpy(new_pasien->tanggal_lahir, tanggal_lahir);
+    strcpy(new_pasien->nomor_bpjs, nomor_bpjs);
+    strcpy(new_pasien->id_pasien, id_pasien);
+    new_pasien->next = head_pasien;
+    head_pasien = new_pasien;
+}
+
+// Fungsi untuk menghapus data pasien berdasarkan id_pasien
+void hapus_pasien(const char *id_pasien) {
+    Pasien *current = head_pasien;
+    Pasien *prev = NULL;
+
+    while (current != NULL && strcmp(current->id_pasien, id_pasien) != 0) {
+        prev = current;
+        current = current->next;
+    }
+
+    if (current == NULL) {
+        printf("Pasien dengan ID %s tidak ditemukan.\n", id_pasien);
+        return;
+    }
+
+    if (prev == NULL) {
+        head_pasien = current->next;
+    } else {
+        prev->next = current->next;
+    }
+
+    free(current);
+    printf("Pasien dengan ID %s telah dihapus.\n", id_pasien);
+}
+
+// Fungsi untuk mencari data pasien berdasarkan id_pasien
+Pasien* cari_pasien(const char *id_pasien) {
+    Pasien *current = head_pasien;
+
+    while (current != NULL) {
+        if (strcmp(current->id_pasien, id_pasien) == 0) {
+            return current;
+        }
+        current = current->next;
+    }
+
+    return NULL;
+}
+
+// Fungsi untuk mengubah data pasien berdasarkan id_pasien
+void ubah_pasien(const char *id_pasien, int umur, const char *nama_pasien, const char *alamat, const char *kota, const char *tempat_lahir, const char *tanggal_lahir, const char *nomor_bpjs) {
+    Pasien *pasien = cari_pasien(id_pasien);
+
+    if (pasien == NULL) {
+        printf("Pasien dengan ID %s tidak ditemukan.\n", id_pasien);
+        return;
+    }
+
+    pasien->umur = umur;
+    strcpy(pasien->nama_pasien, nama_pasien);
+    strcpy(pasien->alamat, alamat);
+    strcpy(pasien->kota, kota);
+    strcpy(pasien->tempat_lahir, tempat_lahir);
+    strcpy(pasien->tanggal_lahir, tanggal_lahir);
+    strcpy(pasien->nomor_bpjs, nomor_bpjs);
+
+    printf("Data pasien dengan ID %s telah diubah.\n", id_pasien);
+}
 
 
-// fungsi untuk mengubah data pasien
+void input_tambah_pasien() {
+    int umur, indekspasien;
+    char nama_pasien[100];
+    char alamat[150];
+    char kota[50];
+    char tempat_lahir[50];
+    char tanggal_lahir[30];
+    char nomor_bpjs[20];
+    char id_pasien[50];
 
+    printf("Masukkan umur: ");
+    scanf("%d", &umur);
+    printf("Masukkan indeks pasien: ");
+    scanf("%d", &indekspasien);
+    printf("Masukkan nama pasien: ");
+    scanf(" %[^\n]", nama_pasien);
+    printf("Masukkan alamat: ");
+    scanf(" %[^\n]", alamat);
+    printf("Masukkan kota: ");
+    scanf(" %[^\n]", kota);
+    printf("Masukkan tempat lahir: ");
+    scanf(" %[^\n]", tempat_lahir);
+    printf("Masukkan tanggal lahir (DD-MM-YYYY): ");
+    scanf(" %[^\n]", tanggal_lahir);
+    printf("Masukkan nomor BPJS: ");
+    scanf(" %[^\n]", nomor_bpjs);
+    printf("Masukkan ID pasien: ");
+    scanf(" %[^\n]", id_pasien);
 
-// fungsi untuk menghapus data pasien
+    tambah_pasien(umur, indekspasien, nama_pasien, alamat, kota, tempat_lahir, tanggal_lahir, nomor_bpjs, id_pasien);
+}
 
+void input_hapus_pasien() {
+    char id_pasien[50];
+    printf("Masukkan ID pasien yang akan dihapus: ");
+    scanf(" %[^\n]", id_pasien);
 
-// fungsi untuk mencari data pasien
+    hapus_pasien(id_pasien);
+}
 
+void input_ubah_pasien() {
+    int umur;
+    char nama_pasien[100];
+    char alamat[150];
+    char kota[50];
+    char tempat_lahir[50];
+    char tanggal_lahir[30];
+    char nomor_bpjs[20];
+    char id_pasien[50];
+
+    printf("Masukkan ID pasien yang akan diubah: ");
+    scanf(" %[^\n]", id_pasien);
+    
+    printf("Masukkan umur baru: ");
+    scanf("%d", &umur);
+    printf("Masukkan nama pasien baru: ");
+    scanf(" %[^\n]", nama_pasien);
+    printf("Masukkan alamat baru: ");
+    scanf(" %[^\n]", alamat);
+    printf("Masukkan kota baru: ");
+    scanf(" %[^\n]", kota);
+    printf("Masukkan tempat lahir baru: ");
+    scanf(" %[^\n]", tempat_lahir);
+    printf("Masukkan tanggal lahir baru (DD-MM-YYYY): ");
+    scanf(" %[^\n]", tanggal_lahir);
+    printf("Masukkan nomor BPJS baru: ");
+    scanf(" %[^\n]", nomor_bpjs);
+
+    ubah_pasien(id_pasien, umur, nama_pasien, alamat, kota, tempat_lahir, tanggal_lahir, nomor_bpjs);
+}
+
+void input_cari_pasien() {
+    char id_pasien[50];
+    printf("Masukkan ID pasien yang akan dicari: ");
+    scanf(" %[^\n]", id_pasien);
+
+    Pasien *pasien = cari_pasien(id_pasien);
+    if (pasien != NULL) {
+        printf("Data pasien ditemukan:\n");
+        printf("ID Pasien: %s\n", pasien->id_pasien);
+        printf("Nama: %s\n", pasien->nama_pasien);
+        printf("Alamat: %s\n", pasien->alamat);
+        printf("Kota: %s\n", pasien->kota);
+        printf("Tempat Lahir: %s\n", pasien->tempat_lahir);
+        printf("Tanggal Lahir: %s\n", pasien->tanggal_lahir);
+        printf("Umur: %d\n", pasien->umur);
+        printf("Nomor BPJS: %s\n", pasien->nomor_bpjs);
+    } else {
+        printf("Pasien dengan ID %s tidak ditemukan.\n", id_pasien);
+    }
+}
+
+// Fungsi untuk menambah data riwayat pasien
+void tambah_riwayat(int indeksriwayat, const char *tanggal_kunjungan, const char *id_pasien, const char *diagnosis, const char *tindakan, const char *kontrol, double biaya) {
+    RiwayatPasien *new_riwayat = (RiwayatPasien*)malloc(sizeof(RiwayatPasien));
+    new_riwayat->indeksriwayat = indeksriwayat;
+    strcpy(new_riwayat->tanggal_kunjungan, tanggal_kunjungan);
+    strcpy(new_riwayat->id_pasien, id_pasien);
+    strcpy(new_riwayat->diagnosis, diagnosis);
+    strcpy(new_riwayat->tindakan, tindakan);
+    strcpy(new_riwayat->kontrol, kontrol);
+    new_riwayat->biaya = biaya;
+    new_riwayat->next = head_riwayat;
+    head_riwayat = new_riwayat;
+}
+
+// Fungsi untuk menghapus data riwayat pasien berdasarkan id_pasien dan tanggal_kunjungan
+void hapus_riwayat(const char *id_pasien, const char *tanggal_kunjungan) {
+    RiwayatPasien *current = head_riwayat;
+    RiwayatPasien *prev = NULL;
+
+    while (current != NULL && (strcmp(current->id_pasien, id_pasien) != 0 || strcmp(current->tanggal_kunjungan, tanggal_kunjungan) != 0)) {
+        prev = current;
+        current = current->next;
+    }
+
+    if (current == NULL) {
+        printf("Riwayat dengan ID %s dan tanggal %s tidak ditemukan.\n", id_pasien, tanggal_kunjungan);
+        return;
+    }
+
+    if (prev == NULL) {
+        head_riwayat = current->next;
+    } else {
+        prev->next = current->next;
+    }
+
+    free(current);
+    printf("Riwayat dengan ID %s dan tanggal %s telah dihapus.\n", id_pasien, tanggal_kunjungan);
+}
+
+// Fungsi untuk mencari data riwayat pasien berdasarkan id_pasien dan tanggal_kunjungan
+RiwayatPasien* cari_riwayat(const char *id_pasien, const char *tanggal_kunjungan) {
+    RiwayatPasien *current = head_riwayat;
+
+    while (current != NULL) {
+        if (strcmp(current->id_pasien, id_pasien) == 0 && strcmp(current->tanggal_kunjungan, tanggal_kunjungan) == 0) {
+            return current;
+        }
+        current = current->next;
+    }
+
+    return NULL;
+}
+
+// Fungsi untuk mengubah data riwayat pasien berdasarkan id_pasien dan tanggal_kunjungan
+void ubah_riwayat(const char *id_pasien, const char *tanggal_kunjungan, const char *diagnosis, const char *tindakan, const char *kontrol, double biaya) {
+    RiwayatPasien *riwayat = cari_riwayat(id_pasien, tanggal_kunjungan);
+
+    if (riwayat == NULL) {
+        printf("Riwayat dengan ID %s dan tanggal %s tidak ditemukan.\n", id_pasien, tanggal_kunjungan);
+        return;
+    }
+
+    strcpy(riwayat->diagnosis, diagnosis);
+    strcpy(riwayat->tindakan, tindakan);
+    strcpy(riwayat->kontrol, kontrol);
+    riwayat->biaya = biaya;
+
+    printf("Data riwayat dengan ID %s dan tanggal %s telah diubah.\n", id_pasien, tanggal_kunjungan);
+}
+
+void input_tambah_riwayat() {
+    int indeksriwayat;
+    char tanggal_kunjungan[20];
+    char id_pasien[50];
+    char diagnosis[100];
+    char tindakan[100];
+    char kontrol[20];
+    double biaya;
+
+    printf("Masukkan indeks riwayat: ");
+    scanf("%d", &indeksriwayat);
+    printf("Masukkan tanggal kunjungan (DD-MM-YYYY): ");
+    scanf(" %[^\n]", tanggal_kunjungan);
+    printf("Masukkan ID pasien: ");
+    scanf(" %[^\n]", id_pasien);
+    printf("Masukkan diagnosis: ");
+    scanf(" %[^\n]", diagnosis);
+    printf("Masukkan tindakan: ");
+    scanf(" %[^\n]", tindakan);
+    printf("Masukkan kontrol: ");
+    scanf(" %[^\n]", kontrol);
+    printf("Masukkan biaya: ");
+    scanf("%lf", &biaya);
+
+    tambah_riwayat(indeksriwayat, tanggal_kunjungan, id_pasien, diagnosis, tindakan, kontrol, biaya);
+}
+
+void input_hapus_riwayat() {
+    char id_pasien[50];
+    char tanggal_kunjungan[20];
+    printf("Masukkan ID pasien yang akan dihapus riwayatnya: ");
+    scanf(" %[^\n]", id_pasien);
+    printf("Masukkan tanggal kunjungan yang akan dihapus riwayatnya (DD-MM-YYYY): ");
+    scanf(" %[^\n]", tanggal_kunjungan);
+
+    hapus_riwayat(id_pasien, tanggal_kunjungan);
+}
+
+void input_ubah_riwayat() {
+    char tanggal_kunjungan[20];
+    char id_pasien[50];
+    char diagnosis[100];
+    char tindakan[100];
+    char kontrol[20];
+    double biaya;
+
+    printf("Masukkan ID pasien yang akan diubah riwayatnya: ");
+    scanf(" %[^\n]", id_pasien);
+    printf("Masukkan tanggal kunjungan yang akan diubah riwayatnya (DD-MM-YYYY): ");
+    scanf(" %[^\n]", tanggal_kunjungan);
+
+    printf("Masukkan diagnosis baru: ");
+    scanf(" %[^\n]", diagnosis);
+    printf("Masukkan tindakan baru: ");
+    scanf(" %[^\n]", tindakan);
+    printf("Masukkan kontrol baru: ");
+    scanf(" %[^\n]", kontrol);
+    printf("Masukkan biaya baru: ");
+    scanf("%lf", &biaya);
+
+    ubah_riwayat(id_pasien, tanggal_kunjungan, diagnosis, tindakan, kontrol, biaya);
+}
+
+void input_cari_riwayat() {
+    char id_pasien[50];
+    char tanggal_kunjungan[20];
+    printf("Masukkan ID pasien yang akan dicari riwayatnya: ");
+    scanf(" %[^\n]", id_pasien);
+    printf("Masukkan tanggal kunjungan yang akan dicari riwayatnya (DD-MM-YYYY): ");
+    scanf(" %[^\n]", tanggal_kunjungan);
+
+    RiwayatPasien *riwayat = cari_riwayat(id_pasien, tanggal_kunjungan);
+    if (riwayat != NULL) {
+        printf("Data riwayat ditemukan:\n");
+        printf("ID Pasien: %s\n", riwayat->id_pasien);
+        printf("Tanggal Kunjungan: %s\n", riwayat->tanggal_kunjungan);
+        printf("Diagnosis: %s\n", riwayat->diagnosis);
+        printf("Tindakan: %s\n", riwayat->tindakan);
+        printf("Kontrol: %s\n", riwayat->kontrol);
+        printf("Biaya: %.2f\n", riwayat->biaya);
+    } else {
+        printf("Riwayat dengan ID %s dan tanggal %s tidak ditemukan.\n", id_pasien, tanggal_kunjungan);
+    }
+}
 
 // Fungsi main
 int main() {
@@ -583,15 +895,19 @@ int main() {
             scanf("%d", &pilihancase1);
                 if (pilihancase1 == 1){
                     // tambahDataPasien();
+                    input_tambah_pasien();
                     break;
                 } else if (pilihancase1 == 2){
                     // ubahDataPasien();
+                    input_ubah_pasien();
                     break;
                 } else if (pilihancase1 == 3){
                     // cariDataPasien();
+                    input_cari_pasien();
                     break;
                 } else if (pilihancase1 == 4){
                     // hapusDataPasien();
+                    input_hapus_pasien();
                     break;
                 }
             case 2:
@@ -603,16 +919,20 @@ int main() {
             printf("pilihan: ");
             scanf("%d", &pilihancase2);
                 if (pilihancase2 == 1){
-                    // tambahDataPasien();
+                    // tambahRiwayatDiagnosis();
+                    input_tambah_riwayat();
                     break;
                 } else if (pilihancase2 == 2){
-                    // ubahDataPasien();
+                    // ubahRiwayatDiagnosis();
+                    input_ubah_riwayat();
                     break;
                 } else if (pilihancase2 == 3){
-                    // cariDataPasien();
+                    // cariRiwayatDiagnosis();
+                    input_cari_riwayat();
                     break;
                 } else if (pilihancase2 == 4){
-                    // hapusDataPasien();
+                    // hapusRiwayatDiagnosis();
+                    input_hapus_riwayat();
                     break;
                 }
             case 3:
