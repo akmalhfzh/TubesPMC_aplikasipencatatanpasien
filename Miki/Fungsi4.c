@@ -3,94 +3,120 @@
 #include <string.h>
 
 #define MAX_LINE_LENGTH 1024
+#define MAX_YEARS 10
+#define MAX_MONTHS 12
 
 typedef struct {
-    int tahun;
-    int bulan;
+    int year;
+    int month;
     double revenue;
-} PendapatanBulanan;
+} Revenue;
 
-void parse_date(const char *date, int *tahun, int *bulan) {
-    sscanf(date, "%d-%d", tahun, bulan);
+typedef struct {
+    int year;
+    double revenue;
+} AnnualRevenue;
+
+// Fungsi untuk memparse tanggal dalam format DD-MM-YYYY
+void parse_date(const char *date, int *day, int *month, int *year) {
+    sscanf(date, "%d-%d-%d", day, month, year);
 }
 
-void process_csv(const char *namafile) {
-    FILE *file = fopen(namafile, "r");
+void process_csv(const char *filename, Revenue monthly_revenues[], int *monthly_count, AnnualRevenue annual_revenues[], int *annual_count, double *total_revenue) {
+    FILE *file = fopen(filename, "r");
     if (file == NULL) {
-        perror("File tidak dapat dibuka");
+        perror("Unable to open file");
         exit(EXIT_FAILURE);
     }
 
     char line[MAX_LINE_LENGTH];
-    fgets(line, sizeof(line), file); 
+    fgets(line, sizeof(line), file); // Skip header line
 
-    PendapatanBulanan pendapatan_bulanan[100];
-    int monthly_count = 0;
+    *monthly_count = 0;
+    *annual_count = 0;
+    *total_revenue = 0.0;
 
     while (fgets(line, sizeof(line), file)) {
         char *token = strtok(line, ",");
         char date[20];
         double cost;
-        int tahun, bulan;
-        
-        // baca tanggal
+        int day, month, year;
+
+        // Skip irrelevant column (kolom pertama)
+        token = strtok(NULL, ",");
+
+        // Baca tanggal dari kolom kedua
         token = strtok(NULL, ",");
         strcpy(date, token);
-        
-        // baca harga
-        for (int i = 0; i < 5; i++) {
+
+        // Skip irrelevant columns (kolom ketiga hingga keenam)
+        for (int i = 0; i < 4; i++) {
             token = strtok(NULL, ",");
         }
-        cost = atof(token);
 
-        parse_date(date, &tahun, &bulan);
+        // baca biaya (kolom ketujuh)
+        cost = atof(strtok(NULL, ","));
 
-        // Total Pendapatan
+        // Parse tanggal untuk mendapatkan hari, bulan, tahun
+        parse_date(date, &day, &month, &year);
+
+        // Aggregate monthly revenue
         int found = 0;
-        for (int i = 0; i < monthly_count; i++) {
-            if (pendapatan_bulanan[i].tahun == tahun && pendapatan_bulanan[i].bulan == bulan) {
-                pendapatan_bulanan[i].revenue += cost;
+        for (int i = 0; i < *monthly_count; i++) {
+            if (monthly_revenues[i].year == year && monthly_revenues[i].month == month) {
+                monthly_revenues[i].revenue += cost;
                 found = 1;
                 break;
             }
         }
         if (!found) {
-            pendapatan_bulanan[monthly_count].tahun = tahun;
-            pendapatan_bulanan[monthly_count].bulan = bulan;
-            pendapatan_bulanan[monthly_count].revenue = cost;
-            monthly_count++;
+            monthly_revenues[*monthly_count].year = year;
+            monthly_revenues[*monthly_count].month = month;
+            monthly_revenues[*monthly_count].revenue = cost;
+            (*monthly_count)++;
         }
+
+        // Aggregate annual revenue
+        found = 0;
+        for (int i = 0; i < *annual_count; i++) {
+            if (annual_revenues[i].year == year) {
+                annual_revenues[i].revenue += cost;
+                found = 1;
+                break;
+            }
+        }
+        if (!found) {
+            annual_revenues[*annual_count].year = year;
+            annual_revenues[*annual_count].revenue = cost;
+            (*annual_count)++;
+        }
+
+        *total_revenue += cost;
     }
 
     fclose(file);
-
-    double pendapatan_tahunan[100] = {0};
-    int annual_count = 0;
-
-    printf("Monthly Revenue:\n");
-    for (int i = 0; i < monthly_count; i++) {
-        printf("Tahun: %d, Bulan: %d, Revenue: %.2f\n", pendapatan_bulanan[i].tahun, pendapatan_bulanan[i].bulan, pendapatan_bulanan[i].revenue);
-        pendapatan_tahunan[pendapatan_bulanan[i].tahun - 2022] += pendapatan_bulanan[i].revenue;
-    }
-
-    printf("\nPendapatan Tahunan:\n");
-    for (int i = 0; i < 100; i++) {
-        if (pendapatan_tahunan[i] > 0) {
-            printf("Tahun: %d, Revenue: %.2f\n", 2022 + i, pendapatan_tahunan[i]);
-            annual_count++;
-        }
-    }
-
-    double pendapatan_total = 0;
-    for (int i = 0; i < 100; i++) {
-        pendapatan_total += pendapatan_tahunan[i];
-    }
-    double pendapatan_ratarata = pendapatan_total / annual_count;
-    printf("\nAverage Annual Revenue: %.2f\n", pendapatan_ratarata);
 }
 
 int main() {
-    process_csv("riwayat_tindakan.csv");
+    Revenue monthly_revenues[MAX_YEARS * MAX_MONTHS] = {0};
+    AnnualRevenue annual_revenues[MAX_YEARS] = {0};
+    int monthly_count, annual_count;
+    double total_revenue;
+
+    process_csv("RiwayatPasien.csv", monthly_revenues, &monthly_count, annual_revenues, &annual_count, &total_revenue);
+
+    printf("Pendapatan Bulanan:\n");
+    for (int i = 0; i < monthly_count; i++) {
+        printf("Tahun: %d, Bulan: %d, Pendapatan: %.2f\n", monthly_revenues[i].year, monthly_revenues[i].month, monthly_revenues[i].revenue);
+    }
+
+    printf("\nPendapatan Tahunan:\n");
+    for (int i = 0; i < annual_count; i++) {
+        printf("Tahun: %d, Pendapatan: %.2f\n", annual_revenues[i].year, annual_revenues[i].revenue);
+    }
+
+    printf("\nTotal Pendapatan Klinik: %.2f\n", total_revenue);
+
     return 0;
 }
 
